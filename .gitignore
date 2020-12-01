@@ -1,0 +1,9 @@
+target
+
+*.class
+*.log
+
+.bloop
+.metals
+.idea
+.DS_Store
