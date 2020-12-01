@@ -7,5 +7,7 @@ lazy val refinery =
     .crossType(CrossType.Pure)
     .settings(sharedSettings)
     .settings(
-      libraryDependencies += "org.example" %%% "foo" % "1.2.3"
+      libraryDependencies ++= Seq(
+        "org.typelevel" %%% "cats-core" % "2.3.0",
+      )
     )
