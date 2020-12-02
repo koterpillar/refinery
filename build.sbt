@@ -2,12 +2,13 @@
 
 lazy val refinery =
   crossProject(JSPlatform, JVMPlatform)
+    .withoutSuffixFor(JVMPlatform)
     .crossType(CrossType.Pure)
     .settings(
-      crossScalaVersions := Seq(
-        "2.13.4",
-      ),
+      scalaVersion := "2.13.4",
       libraryDependencies ++= Seq(
         "org.typelevel" %%% "cats-core" % "2.3.0",
+        "org.scalameta" %%% "munit" % "0.7.19" % Test,
       ),
+      testFrameworks += new TestFramework("munit.Framework"),
     )
