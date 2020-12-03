@@ -28,7 +28,7 @@ package object refinery {
       case Validated.Invalid(e) => invalid(e)
     }
 
-    def flatMap_[B](fn: A => ValidatedC[B]): ValidatedC[B] = value.value match {
+    def andThen[B](fn: A => ValidatedC[B]): ValidatedC[B] = value.value match {
       case Validated.Valid((ctx, a)) => prependContext(ctx, fn(a))
       case Validated.Invalid(e) => invalid(e)
     }
@@ -36,6 +36,13 @@ package object refinery {
 
   implicit class ValueOps[A](value: A) {
     def validC: ValidatedC[A] = value.pure[ValidatedC]
+  }
+
+  implicit class OptionOps[A](value: Option[A]) {
+    def toValidatedC(error: => String): ValidatedC[A] = value match {
+      case None => error.invalidC
+      case Some(value) => value.validC
+    }
   }
 
   implicit class EitherOps[A](value: Either[String, A]) {
