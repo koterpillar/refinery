@@ -33,9 +33,11 @@ val config: Map[String, String] = Map(
 )
 
 // Either
-def parseInt(value: String): Either[String, Int] = value.toIntOption.toRight(s"Invalid integer: $value")
+def parseInt(value: String): Either[String, Int] =
+  value.toIntOption.toRight(s"Invalid integer: $value")
 
-def getConfig(key: String): Either[String, String] = config.get(key).toRight(s"No key: $key")
+def getConfig(key: String): Either[String, String] =
+  config.get(key).toRight(s"No key: $key")
 
 println(
   (
@@ -55,9 +57,11 @@ Only the first error is reported.
 import cats.implicits._
 
 // cats.Validated
-def parseInt(value: String): ValidatedNec[String, Int] = value.toIntOption.toValidNec(s"Invalid integer: $value")
+def parseInt(value: String): ValidatedNec[String, Int] =
+  value.toIntOption.toValidNec(s"Invalid integer: $value")
 
-def getConfig(key: String): ValidatedNec[String, String] = config.get(key).toValidNec(s"No key: $key")
+def getConfig(key: String): ValidatedNec[String, String] =
+  config.get(key).toValidNec(s"No key: $key")
 
 println(
   (
@@ -79,9 +83,11 @@ import cats.implicits._
 import refinery._
 
 // cats.Validated
-def parseInt(value: String): ValidatedC[Int] = value.toIntOption.toValidatedC(s"Invalid integer: $value")
+def parseInt(value: String): ValidatedC[Int] =
+  value.toIntOption.toValidatedC(s"Invalid integer: $value")
 
-def getConfig(key: String): ValidatedC[String] = config.get(key).toValidatedC("Key missing").context(key)
+def getConfig(key: String): ValidatedC[String] =
+  config.get(key).toValidatedC("Key missing").context(key)
 
 println(
   (
