@@ -20,7 +20,7 @@ occurred.
 
 ## Motivational example
 
-### Either
+Let's try to parse a configuration into a simple case class:
 
 ```scala
 import cats.implicits._
@@ -31,8 +31,14 @@ val config: Map[String, String] = Map(
   "width" -> "10",
   "height" -> "oops",
 )
+```
 
-// Either
+The configuration is invalid (height is not an integer, and depth is missing).
+How will the errors be reported?
+
+### Either
+
+```scala
 def parseInt(value: String): Either[String, Int] =
   value.toIntOption.toRight(s"Invalid integer: $value")
 
@@ -54,9 +60,6 @@ Only the first error is reported.
 ### Cats' Validated
 
 ```scala
-import cats.implicits._
-
-// cats.Validated
 def parseInt(value: String): ValidatedNec[String, Int] =
   value.toIntOption.toValidNec(s"Invalid integer: $value")
 
@@ -79,10 +82,8 @@ error lacks context.
 ### Refinery
 
 ```scala
-import cats.implicits._
 import refinery._
 
-// cats.Validated
 def parseInt(value: String): ValidatedC[Int] =
   value.toIntOption.toValidatedC(s"Invalid integer: $value")
 
