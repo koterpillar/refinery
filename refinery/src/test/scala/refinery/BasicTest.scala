@@ -4,13 +4,6 @@ import cats.data._
 import cats.syntax.all._
 
 class BasicTest extends munit.FunSuite {
-  case class Connection(endpoint: String, port: Int)
-
-  case class Cluster(
-                    leader: Connection,
-                    followers: Vector[Connection],
-                    )
-
   type Config = Map[String, String]
 
   implicit class ConfigOps(value: Config) {
