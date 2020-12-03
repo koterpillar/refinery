@@ -15,7 +15,8 @@ class BasicTest extends munit.FunSuite {
 
   implicit class ConfigOps(value: Config) {
     def project[A](prefix: String): ValidatedC[Config] = value.flatMap {
-      case (k, v) if k.startsWith(prefix) => Some(k.substring(prefix.length).dropWhile(_ == '.') -> v)
+      case (k, v) if k == prefix => Some("" -> v)
+      case (k, v) if k.startsWith(prefix + ".") => Some(k.substring(prefix.length + 1) -> v)
       case _ => None
     }.validC.context(prefix)
 
@@ -24,7 +25,7 @@ class BasicTest extends munit.FunSuite {
       case None => "No value found".invalidC
     }
 
-    def topLevelKeys: Vector[String] = value.keys.map(_.takeWhile(_ != '.')).toVector
+    def topLevelKeys: Vector[String] = value.keys.map(_.takeWhile(_ != '.')).toVector.distinct
   }
 
   type Parser[A] = Config => ValidatedC[A]
@@ -35,7 +36,7 @@ class BasicTest extends munit.FunSuite {
   }
 
   def manyOf[A](parser: Parser[A]): Parser[Vector[A]] = config => {
-    val keys: Vector[String] = config.topLevelKeys.flatMap(_.toIntOption).sorted.map(_.toString)
+    val keys: Vector[String] = config.topLevelKeys.filter(_.toIntOption.nonEmpty).sortBy(_.toIntOption)
     val items: Vector[ValidatedC[Config]] = keys.map(config.project)
     items.traverse(_.and(parser))
   }
