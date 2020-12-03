@@ -23,6 +23,8 @@ class BasicTest extends munit.FunSuite {
       case Some(result) => result.validC
       case None => "No value found".invalidC
     }
+
+    def topLevelKeys: Vector[String] = value.keys.map(_.takeWhile(_ != '.')).toVector
   }
 
   type Parser[A] = Config => ValidatedC[A]
@@ -32,13 +34,16 @@ class BasicTest extends munit.FunSuite {
     case None => s"Expected a number, found: '$value'".invalidC
   }
 
+  def manyOf[A](parser: Parser[A]): Parser[Vector[A]] = config => {
+    val keys: Vector[String] = config.topLevelKeys.flatMap(_.toIntOption).sorted.map(_.toString)
+    val items: Vector[ValidatedC[Config]] = keys.map(config.project)
+    items.traverse(_.and(parser))
+  }
+
   def parseConnection(data: Config): ValidatedC[Connection] = (
     data.project("endpoint").and(_.only),
     data.project("port").and(_.only).and(parseInt),
   ).mapN(Connection.apply)
-
-  def manyOf[A](parser: Parser[A]): Parser[Vector[A]] = config =>
-    LazyList.from(0).take(10).map(i => config.project(i.toString)).takeWhile(_.exists(_.nonEmpty)).toVector.sequence.and(_.traverse(parser))
 
   def parseConfig(data: Config): ValidatedC[Cluster] = (
     data.project("leader").and(parseConnection),
@@ -79,10 +84,10 @@ class BasicTest extends munit.FunSuite {
 
     val result: ValidatedC[Cluster] = parseConfig(badData)
 
-    assertEquals(result.toEither, Left(NonEmptyChain(
-      "leader: port: expected a number, found: 'bad'",
-      "followers: 0: port: expected a number, found: 'bad'",
-      "followers: 1: endpoint: missing"
+    assertEquals(result.toEither.leftMap(_.toList), Left(List(
+      "leader: port: Expected a number, found: 'bad'",
+      "followers: 0: port: Expected a number, found: 'bad'",
+      "followers: 1: endpoint: No value found"
     )))
   }
 }

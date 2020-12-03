@@ -8,12 +8,10 @@ package object refinery {
   type ValidatedF[A] = ValidatedNec[String, A]
   type Context[A]    = (Chain[String], A)
 
-  private[refinery] def mapContext[A](value: ValidatedC[A])(fn: Chain[String] => Chain[String]): ValidatedC[A] = value.value match {
-    case Validated.Valid((ctx, a)) => validatedC((fn(ctx), a).valid)
-    case Validated.Invalid(e) => invalid(e)
+  private[refinery] def prependContext[A](context: Chain[String], value: ValidatedC[A]): ValidatedC[A] = value.value match {
+    case Validated.Valid((ctx, a)) => validatedC((context ++ ctx, a).valid)
+    case Validated.Invalid(e) => invalid(e.map(error => context.append(error).mkString_(": ")))
   }
-
-  private[refinery] def prependContext[A](context: Chain[String], value: ValidatedC[A]): ValidatedC[A] = mapContext(value)(context ++ _)
 
   private[refinery] def validatedC[A](value: ValidatedF[Context[A]]): ValidatedC[A] = Nested[ValidatedF, Context, A](value)
 
@@ -25,7 +23,10 @@ package object refinery {
       case Validated.Invalid(e) => e.asLeft[A]
     }
 
-    def context(context: String): ValidatedC[A] = mapContext(value)(_.append(context))
+    def context(context: String): ValidatedC[A] = value.value match {
+      case Validated.Valid((ctx, a)) => validatedC((ctx.append(context), a).valid)
+      case Validated.Invalid(e) => invalid(e)
+    }
 
     def and[B](fn: A => ValidatedC[B]): ValidatedC[B] = value.value match {
       case Validated.Valid((ctx, a)) => prependContext(ctx, fn(a))
