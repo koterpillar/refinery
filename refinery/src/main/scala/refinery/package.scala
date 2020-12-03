@@ -28,7 +28,7 @@ package object refinery {
       case Validated.Invalid(e) => invalid(e)
     }
 
-    def and[B](fn: A => ValidatedC[B]): ValidatedC[B] = value.value match {
+    def flatMap_[B](fn: A => ValidatedC[B]): ValidatedC[B] = value.value match {
       case Validated.Valid((ctx, a)) => prependContext(ctx, fn(a))
       case Validated.Invalid(e) => invalid(e)
     }

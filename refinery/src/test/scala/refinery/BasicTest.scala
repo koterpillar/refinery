@@ -38,17 +38,17 @@ class BasicTest extends munit.FunSuite {
   def manyOf[A](parser: Parser[A]): Parser[Vector[A]] = config => {
     val keys: Vector[String] = config.topLevelKeys.filter(_.toIntOption.nonEmpty).sortBy(_.toIntOption)
     val items: Vector[ValidatedC[Config]] = keys.map(config.project)
-    items.traverse(_.and(parser))
+    items.traverse(_.flatMap_(parser))
   }
 
   def parseConnection(data: Config): ValidatedC[Connection] = (
-    data.project("endpoint").and(_.only),
-    data.project("port").and(_.only).and(parseInt),
+    data.project("endpoint").flatMap_(_.only),
+    data.project("port").flatMap_(_.only).flatMap_(parseInt),
   ).mapN(Connection.apply)
 
   def parseConfig(data: Config): ValidatedC[Cluster] = (
-    data.project("leader").and(parseConnection),
-    data.project("followers").and(manyOf(parseConnection)),
+    data.project("leader").flatMap_(parseConnection),
+    data.project("followers").flatMap_(manyOf(parseConnection)),
   ).mapN(Cluster.apply)
 
   test("happy path") {
