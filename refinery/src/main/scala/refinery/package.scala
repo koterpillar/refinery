@@ -3,56 +3,49 @@ import cats.data._
 import cats.syntax.all._
 
 package object refinery {
-  type ValidatedC[A] = Nested[ValidatedF, Context, A]
-
-  type ValidatedF[A] = ValidatedNec[String, A]
-  type Context[A]    = (Chain[String], A)
-
-  private[refinery] def prependContext[A](context: Chain[String], value: ValidatedC[A]): ValidatedC[A] = value.value match {
-    case Validated.Valid((ctx, a)) => validatedC((context ++ ctx, a).valid)
-    case Validated.Invalid(e) => invalid(e.map(error => context.append(error).mkString_(": ")))
+  private[refinery] def prependContext[C, E, A](context: Chain[C], value: ValidatedC[C, E, A]): ValidatedC[C, E, A] = value match {
+    case ValidatedC.Valid(ctx, a) => ValidatedC.Valid(context ++ ctx, a)
+    case ValidatedC.Invalid(errors) => ValidatedC.Invalid(errors.map { case (ctx, e) => (context ++ ctx, e) })
   }
 
-  private[refinery] def validatedC[A](value: ValidatedF[Context[A]]): ValidatedC[A] = Nested[ValidatedF, Context, A](value)
+  private[refinery] def invalid[C, E, A](value: NonEmptyChain[E]): ValidatedC[C, E, A] = ValidatedC.Invalid(value.map(Chain.empty[C] -> _))
 
-  private[refinery] def invalid[A](value: NonEmptyChain[String]): ValidatedC[A] = validatedC(value.invalid)
-
-  implicit class ValidatedOps[A](value: ValidatedC[A]) {
-    def toEither: Either[NonEmptyChain[String], A] = value.value match {
-      case Validated.Valid((_, a)) => a.asRight[NonEmptyChain[String]]
-      case Validated.Invalid(e) => e.asLeft[A]
+  implicit class ValidatedOps[C, E, A](value: ValidatedC[C, E, A]) {
+    def toEither: Either[ValidatedC.Errors[C, E], A] = value.value match {
+      case ValidatedC.Valid(_, a) => a.asRight[ValidatedC.Errors[C, E]]
+      case ValidatedC.Invalid(errors) => errors.asLeft[A]
     }
 
-    def context(context: String): ValidatedC[A] = value.value match {
-      case Validated.Valid((ctx, a)) => validatedC((ctx.append(context), a).valid)
-      case Validated.Invalid(e) => invalid(e)
+    def context(context: C): ValidatedC[C, E, A] = value match {
+      case ValidatedC.Valid(ctx, a) => ValidatedC.Valid(ctx.append(context), a)
+      case invalid@ValidatedC.Invalid(_) => invalid
     }
 
-    def andThen[B](fn: A => ValidatedC[B]): ValidatedC[B] = value.value match {
-      case Validated.Valid((ctx, a)) => prependContext(ctx, fn(a))
-      case Validated.Invalid(e) => invalid(e)
+    def andThen[B](fn: A => ValidatedC[C, E, B]): ValidatedC[C, E, B] = value.value match {
+      case ValidatedC.Valid(ctx, a) => prependContext(ctx, fn(a))
+      case invalid@ValidatedC.Invalid(_) => invalid
     }
   }
 
   implicit class ValueOps[A](value: A) {
-    def validC: ValidatedC[A] = value.pure[ValidatedC]
+    def validC[C, E]: ValidatedC[C, E, A] = value.pure[ValidatedC[C, E, *]]
   }
 
   implicit class OptionOps[A](value: Option[A]) {
-    def toValidatedC(error: => String): ValidatedC[A] = value match {
-      case None => error.invalidC
+    def toValidatedC[C, E](error: => E): ValidatedC[C, E, A] = value match {
+      case None => error.invalidC[C, A]
       case Some(value) => value.validC
     }
   }
 
-  implicit class EitherOps[A](value: Either[String, A]) {
-    def toValidatedC: ValidatedC[A] = value match {
+  implicit class EitherOps[E, A](value: Either[E, A]) {
+    def toValidatedC[C]: ValidatedC[C, E, A] = value match {
       case Left(error) => error.invalidC
       case Right(value) => value.validC
     }
   }
 
-  implicit class FailureOps(value: String) {
-    def invalidC[A]: ValidatedC[A] = invalid(NonEmptyChain(value))
+  implicit class FailureOps[E](value: E) {
+    def invalidC[C, A]: ValidatedC[C, E, A] = invalid(NonEmptyChain(value))
   }
 }
