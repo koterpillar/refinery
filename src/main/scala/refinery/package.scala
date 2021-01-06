@@ -11,7 +11,7 @@ package object refinery {
   private[refinery] def invalid[C, E, A](value: NonEmptyChain[E]): ValidatedC[C, E, A] = ValidatedC.Invalid(value.map(Chain.empty[C] -> _))
 
   implicit class ValidatedOps[C, E, A](value: ValidatedC[C, E, A]) {
-    def toEither: Either[ValidatedC.Errors[C, E], A] = value.value match {
+    def toEither: Either[ValidatedC.Errors[C, E], A] = value match {
       case ValidatedC.Valid(_, a) => a.asRight[ValidatedC.Errors[C, E]]
       case ValidatedC.Invalid(errors) => errors.asLeft[A]
     }
@@ -21,7 +21,7 @@ package object refinery {
       case invalid@ValidatedC.Invalid(_) => invalid
     }
 
-    def andThen[B](fn: A => ValidatedC[C, E, B]): ValidatedC[C, E, B] = value.value match {
+    def andThen[B](fn: A => ValidatedC[C, E, B]): ValidatedC[C, E, B] = value match {
       case ValidatedC.Valid(ctx, a) => prependContext(ctx, fn(a))
       case invalid@ValidatedC.Invalid(_) => invalid
     }

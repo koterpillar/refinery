@@ -10,3 +10,5 @@ libraryDependencies ++= Seq(
   "com.lihaoyi" %% "ujson" % "1.2.2" % Test,
 )
 testFrameworks += new TestFramework("munit.Framework")
+
+addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.11.2" cross CrossVersion.full)
