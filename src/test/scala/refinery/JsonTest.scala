@@ -6,25 +6,27 @@ import ujson._
 
 class JsonTest extends munit.FunSuite {
 
+  type V[A] = ValidatedC[String, String, A]
+
   implicit class JsonOps(value: Value) {
-    def keyV(key: String): ValidatedC[Value] = value.validC.context(key).andThen(_.objOpt.flatMap(_.get(key)).toValidatedC("No value found"))
-    def strV: ValidatedC[String] = value.strOpt.toValidatedC(s"Expected a string, found: $value")
-    def intV: ValidatedC[Int] = value.numOpt.toValidatedC(s"Expected a number, found: $value").map(_.toInt)
-    def arrV: ValidatedC[Vector[Value]] = value.arrOpt.toValidatedC(s"Expected array, found: $value").map(_.toVector)
+    def keyV(key: String): V[Value] = value.validC.context(key).andThen(_.objOpt.flatMap(_.get(key)).toValidatedC("No value found"))
+    def strV: V[String] = value.strOpt.toValidatedC(s"Expected a string, found: $value")
+    def intV: V[Int] = value.numOpt.toValidatedC(s"Expected a number, found: $value").map(_.toInt)
+    def arrV: V[Vector[Value]] = value.arrOpt.toValidatedC(s"Expected array, found: $value").map(_.toVector)
   }
 
   implicit class VectorOps[A](value: Vector[A]) {
-    def traverseWithIndexV[B](fn: A => ValidatedC[B]): ValidatedC[Vector[B]] = value.zipWithIndex.traverse {
+    def traverseWithIndexV[B](fn: A => V[B]): V[Vector[B]] = value.zipWithIndex.traverse {
       case (item, index) => item.validC.context(index.toString).andThen(fn)
     }
   }
 
-  def parseConnection(data: Value): ValidatedC[Connection] = (
+  def parseConnection(data: Value): V[Connection] = (
     data.keyV("endpoint").andThen(_.strV),
     data.keyV("port").andThen(_.intV),
   ).mapN(Connection.apply)
 
-  def parseConfig(data: Value): ValidatedC[Cluster] = (
+  def parseConfig(data: Value): V[Cluster] = (
     data.keyV("leader").andThen(parseConnection),
     data.keyV("followers").andThen(_.arrV).andThen(_.traverseWithIndexV(parseConnection)),
   ).mapN(Cluster.apply)
@@ -47,7 +49,7 @@ class JsonTest extends munit.FunSuite {
       ),
     )
 
-    val result: ValidatedC[Cluster] = parseConfig(configData)
+    val result: V[Cluster] = parseConfig(configData)
 
     assertEquals(result.toEither, Right(
       Cluster(
@@ -77,9 +79,13 @@ class JsonTest extends munit.FunSuite {
       ),
     )
 
-    val result: ValidatedC[Cluster] = parseConfig(badData)
+    val result: V[Cluster] = parseConfig(badData)
 
-    assertEquals(result.toEither.leftMap(_.toList), Left(List(
+    def formatError(error: ValidatedC.Error[String, String]): String = error match {
+      case (context, message) => context.append(message).mkString_(": ")
+    }
+
+    assertEquals(result.toEither.leftMap(_.map(formatError).toList), Left(List(
       "leader: port: Expected a number, found: \"bad\"",
       "followers: 0: port: Expected a number, found: \"bad\"",
       "followers: 1: endpoint: No value found"
