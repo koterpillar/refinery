@@ -5,10 +5,10 @@ import cats.syntax.all._
 package object refinery {
   private[refinery] def prependContext[C, E, A](context: Chain[C], value: ValidatedC[C, E, A]): ValidatedC[C, E, A] = value match {
     case ValidatedC.Valid(ctx, a) => ValidatedC.Valid(context ++ ctx, a)
-    case ValidatedC.Invalid(errors) => ValidatedC.Invalid(errors.map { case (ctx, e) => (context ++ ctx, e) })
+    case ValidatedC.Invalid(errors) => ValidatedC.Invalid(errors.map(_.prependContext(context)))
   }
 
-  private[refinery] def invalid[C, E, A](value: NonEmptyChain[E]): ValidatedC[C, E, A] = ValidatedC.Invalid(value.map(Chain.empty[C] -> _))
+  private[refinery] def invalid[C, E, A](value: NonEmptyChain[E]): ValidatedC[C, E, A] = ValidatedC.Invalid(value.map(Error.of[C, E]))
 
   implicit class ValidatedOps[C, E, A](value: ValidatedC[C, E, A]) {
     def toEither: Either[ValidatedC.Errors[C, E], A] = value match {

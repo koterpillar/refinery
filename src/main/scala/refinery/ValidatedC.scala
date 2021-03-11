@@ -8,7 +8,6 @@ sealed trait ValidatedC[+C, +E, +A]
 object ValidatedC {
   final case class Valid[+C, +A](context: Chain[C], value: A) extends ValidatedC[C, Nothing, A]
 
-  type Error[+C, +E] = (Chain[C], E)
   type Errors[+C, +E] = NonEmptyChain[Error[C, E]]
   final case class Invalid[+C, +E](errors: Errors[C, E]) extends ValidatedC[C, E, Nothing]
 

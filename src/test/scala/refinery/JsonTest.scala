@@ -81,9 +81,7 @@ class JsonTest extends munit.FunSuite {
 
     val result: V[Cluster] = parseConfig(badData)
 
-    def formatError(error: ValidatedC.Error[String, String]): String = error match {
-      case (context, message) => context.append(message).mkString_(": ")
-    }
+    def formatError(error: Error[String, String]): String = error.context.append(error.error).mkString_(": ")
 
     assertEquals(result.toEither.leftMap(_.map(formatError).toList), Left(List(
       "leader: port: Expected a number, found: \"bad\"",
