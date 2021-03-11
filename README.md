@@ -84,10 +84,10 @@ error lacks context.
 ```scala
 import refinery._
 
-def parseInt(value: String): ValidatedC[Int] =
+def parseInt(value: String): ValidatedC[String, String, Int] =
   value.toIntOption.toValidatedC(s"Invalid integer: $value")
 
-def getConfig(key: String): ValidatedC[String] =
+def getConfig(key: String): ValidatedC[String, String, String] =
   config.get(key).toValidatedC("Key missing").context(key)
 
 println(
