@@ -16,6 +16,14 @@ lazy val refinery = (project in file("."))
     organization := "com.koterpillar",
     organizationName := "Koterpillar",
     organizationHomepage := Some(url("https://koterpillar.com/")),
+    developers := List(
+      Developer(
+        id = "refinery-developers",
+        name = "Refinery Developers",
+        email = "noreply@example.com",
+        url = "https://github.com/koterpillar/refinery/",
+      ),
+    ),
 
     sonatypeCredentialHost := "s01.oss.sonatype.org",
   )
