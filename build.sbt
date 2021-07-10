@@ -2,7 +2,6 @@ ThisBuild / scalaVersion := "2.13.5"
 
 lazy val refinery = (project in file("."))
   .settings(
-    licenses := List("MIT License" -> url("https://github.com/seek-oss/refinery/blob/main/LICENSE")),
     libraryDependencies ++= Seq(
       "org.typelevel" %% "cats-core" % "2.3.0",
       "org.scalameta" %% "munit" % "0.7.19" % Test,
