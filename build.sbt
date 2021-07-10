@@ -40,8 +40,8 @@ ThisBuild / pomIncludeRepository := { _ => false }
 ThisBuild / publishMavenStyle := true
 
 ThisBuild / githubWorkflowTargetTags ++= Seq("v*")
-ThisBuild / githubWorkflowPublishTargetBranches := 
-    Seq(RefPredicate.StartsWith(Ref.Tag("v")))
+ThisBuild / githubWorkflowPublishTargetBranches += 
+  RefPredicate.StartsWith(Ref.Tag("v"))
 
 ThisBuild / githubWorkflowPublish := Seq(
   WorkflowStep.Sbt(
