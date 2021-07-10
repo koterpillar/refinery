@@ -14,7 +14,8 @@ lazy val refinery = (project in file("."))
         Some("snapshots" at nexus + "content/repositories/snapshots")
       else
         Some("releases"  at nexus + "service/local/staging/deploy/maven2")
-    }
+    },
+    sonatypeCredentialHost := "s01.oss.sonatype.org",
   )
 
 addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.11.3" cross CrossVersion.full)
@@ -38,7 +39,6 @@ ThisBuild / homepage := Some(url("https://github.com/koterpillar/refinery/"))
 // Remove all additional repository other than Maven Central from POM
 ThisBuild / pomIncludeRepository := { _ => false }
 ThisBuild / publishMavenStyle := true
-ThisBuild / sonatypeCredentialHost := "s01.oss.sonatype.org"
 
 ThisBuild / githubWorkflowTargetTags ++= Seq("v*")
 ThisBuild / githubWorkflowPublishTargetBranches += 
