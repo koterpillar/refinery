@@ -21,7 +21,7 @@ lazy val refinery = (project in file("."))
         id = "refinery-developers",
         name = "Refinery Developers",
         email = "noreply@example.com",
-        url = "https://github.com/koterpillar/refinery/",
+        url = url("https://github.com/koterpillar/refinery/"),
       ),
     ),
 
