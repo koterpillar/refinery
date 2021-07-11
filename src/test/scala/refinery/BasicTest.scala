@@ -9,15 +9,18 @@ class BasicTest extends munit.FunSuite {
   type V[A] = ValidatedC[String, String, A]
 
   implicit class ConfigOps(value: Config) {
-    def project[A](prefix: String): V[Config] = value.flatMap {
-      case (k, v) if k == prefix => Some("" -> v)
-      case (k, v) if k.startsWith(prefix + ".") => Some(k.substring(prefix.length + 1) -> v)
-      case _ => None
-    }.validC.context(prefix)
+    def project[A](prefix: String): V[Config] = value
+      .flatMap {
+        case (k, v) if k == prefix                => Some("" -> v)
+        case (k, v) if k.startsWith(prefix + ".") => Some(k.substring(prefix.length + 1) -> v)
+        case _                                    => None
+      }
+      .validC
+      .context(prefix)
 
     def only: V[String] = value.get("") match {
       case Some(result) => result.validC
-      case None => "No value found".invalidC
+      case None         => "No value found".invalidC
     }
 
     def topLevelKeys: Vector[String] = value.keys.map(_.takeWhile(_ != '.')).toVector.distinct
@@ -27,11 +30,12 @@ class BasicTest extends munit.FunSuite {
 
   def parseInt(value: String): V[Int] = value.toIntOption match {
     case Some(value) => value.validC
-    case None => s"Expected a number, found: '$value'".invalidC
+    case None        => s"Expected a number, found: '$value'".invalidC
   }
 
   def manyOf[A](parser: Parser[A]): Parser[Vector[A]] = config => {
-    val keys: Vector[String] = config.topLevelKeys.filter(_.toIntOption.nonEmpty).sortBy(_.toIntOption)
+    val keys: Vector[String] =
+      config.topLevelKeys.filter(_.toIntOption.nonEmpty).sortBy(_.toIntOption)
     val items: Vector[V[Config]] = keys.map(config.project)
     items.traverse(_.andThen(parser))
   }
@@ -58,15 +62,18 @@ class BasicTest extends munit.FunSuite {
 
     val result: V[Cluster] = parseConfig(configData)
 
-    assertEquals(result.toEither, Right(
-      Cluster(
-        leader = Connection("machine1", 1234),
-        followers = Vector(
-          Connection("machine2", 5678),
-          Connection("machine3", 5678),
-        )
-      )
-    ))
+    assertEquals(
+      result.toEither,
+      Right(
+        Cluster(
+          leader = Connection("machine1", 1234),
+          followers = Vector(
+            Connection("machine2", 5678),
+            Connection("machine3", 5678),
+          ),
+        ),
+      ),
+    )
   }
 
   test("multiple failures") {
@@ -80,12 +87,18 @@ class BasicTest extends munit.FunSuite {
 
     val result: V[Cluster] = parseConfig(badData)
 
-    def formatError(error: Error[String, String]): String = error.context.append(error.error).mkString_(": ")
+    def formatError(error: Error[String, String]): String =
+      error.context.append(error.error).mkString_(": ")
 
-    assertEquals(result.toEither.leftMap(_.map(formatError).toList), Left(List(
-      "leader: port: Expected a number, found: 'bad'",
-      "followers: 0: port: Expected a number, found: 'bad'",
-      "followers: 1: endpoint: No value found"
-    )))
+    assertEquals(
+      result.toEither.leftMap(_.map(formatError).toList),
+      Left(
+        List(
+          "leader: port: Expected a number, found: 'bad'",
+          "followers: 0: port: Expected a number, found: 'bad'",
+          "followers: 1: endpoint: No value found",
+        ),
+      ),
+    )
   }
 }

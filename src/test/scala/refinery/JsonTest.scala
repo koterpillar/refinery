@@ -9,10 +9,12 @@ class JsonTest extends munit.FunSuite {
   type V[A] = ValidatedC[String, String, A]
 
   implicit class JsonOps(value: Value) {
-    def keyV(key: String): V[Value] = value.validC.context(key).andThen(_.objOpt.flatMap(_.get(key)).toValidatedC("No value found"))
+    def keyV(key: String): V[Value] =
+      value.validC.context(key).andThen(_.objOpt.flatMap(_.get(key)).toValidatedC("No value found"))
     def strV: V[String] = value.strOpt.toValidatedC(s"Expected a string, found: $value")
     def intV: V[Int] = value.numOpt.toValidatedC(s"Expected a number, found: $value").map(_.toInt)
-    def arrV: V[Vector[Value]] = value.arrOpt.toValidatedC(s"Expected array, found: $value").map(_.toVector)
+    def arrV: V[Vector[Value]] =
+      value.arrOpt.toValidatedC(s"Expected array, found: $value").map(_.toVector)
   }
 
   implicit class VectorOps[A](value: Vector[A]) {
@@ -51,15 +53,18 @@ class JsonTest extends munit.FunSuite {
 
     val result: V[Cluster] = parseConfig(configData)
 
-    assertEquals(result.toEither, Right(
-      Cluster(
-        leader = Connection("machine1", 1234),
-        followers = Vector(
-          Connection("machine2", 5678),
-          Connection("machine3", 5678),
-        )
-      )
-    ))
+    assertEquals(
+      result.toEither,
+      Right(
+        Cluster(
+          leader = Connection("machine1", 1234),
+          followers = Vector(
+            Connection("machine2", 5678),
+            Connection("machine3", 5678),
+          ),
+        ),
+      ),
+    )
   }
 
   test("multiple failures") {
@@ -81,12 +86,18 @@ class JsonTest extends munit.FunSuite {
 
     val result: V[Cluster] = parseConfig(badData)
 
-    def formatError(error: Error[String, String]): String = error.context.append(error.error).mkString_(": ")
+    def formatError(error: Error[String, String]): String =
+      error.context.append(error.error).mkString_(": ")
 
-    assertEquals(result.toEither.leftMap(_.map(formatError).toList), Left(List(
-      "leader: port: Expected a number, found: \"bad\"",
-      "followers: 0: port: Expected a number, found: \"bad\"",
-      "followers: 1: endpoint: No value found"
-    )))
+    assertEquals(
+      result.toEither.leftMap(_.map(formatError).toList),
+      Left(
+        List(
+          "leader: port: Expected a number, found: \"bad\"",
+          "followers: 0: port: Expected a number, found: \"bad\"",
+          "followers: 1: endpoint: No value found",
+        ),
+      ),
+    )
   }
 }

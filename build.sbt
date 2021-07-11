@@ -8,10 +8,11 @@ lazy val refinery = (project in file("."))
       "com.lihaoyi" %% "ujson" % "1.4.0" % Test,
     ),
     testFrameworks += new TestFramework("munit.Framework"),
-
     name := "Refinery",
     description := "Contextual validation for Scala",
-    licenses := List("MIT License" -> url("https://github.com/seek-oss/refinery/blob/main/LICENSE")),
+    licenses := List(
+      "MIT License" -> url("https://github.com/seek-oss/refinery/blob/main/LICENSE"),
+    ),
     homepage := Some(url("https://github.com/koterpillar/refinery/")),
     organization := "com.koterpillar",
     organizationName := "Koterpillar",
@@ -24,15 +25,19 @@ lazy val refinery = (project in file("."))
         url = url("https://github.com/koterpillar/refinery/"),
       ),
     ),
-
     sonatypeCredentialHost := "s01.oss.sonatype.org",
   )
 
 addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.13.0" cross CrossVersion.full)
 
 ThisBuild / githubWorkflowTargetTags ++= Seq("v*")
-ThisBuild / githubWorkflowPublishTargetBranches += 
+ThisBuild / githubWorkflowPublishTargetBranches +=
   RefPredicate.StartsWith(Ref.Tag("v"))
+
+ThisBuild / githubWorkflowBuild += WorkflowStep.Sbt(
+  List("scalafmtSbtCheck", "scalafmtCheckAll"),
+  name = Some("Check Formatting"),
+)
 
 ThisBuild / githubWorkflowPublish := Seq(
   WorkflowStep.Sbt(
@@ -40,7 +45,7 @@ ThisBuild / githubWorkflowPublish := Seq(
     env = Map(
       "PGP_SECRET" -> "${{ secrets.PGP_SECRET }}",
       "SONATYPE_PASSWORD" -> "${{ secrets.SONATYPE_PASSWORD }}",
-      "SONATYPE_USERNAME" -> "${{ secrets.SONATYPE_USERNAME }}"
-    )
-  )
+      "SONATYPE_USERNAME" -> "${{ secrets.SONATYPE_USERNAME }}",
+    ),
+  ),
 )
