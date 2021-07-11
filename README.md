@@ -1,22 +1,34 @@
-# Refinery - contextual validation for Scala
+# Refinery - parser for complex data structures
+
+[![Maven Central](https://img.shields.io/maven-central/v/com.koterpillar/refinery_2.13)](https://mvnrepository.com/artifact/com.koterpillar/refinery)
 
 This library is a refinement of Cats' [Validated] for representing the result
-of validating some input, to add more context about where any failures
+of parsing some input, to add more context about where any failures
 occurred.
 
 ## Problem
 
-* Using `Either` in Scala is a way to validate complex data structures.
-  However, the first validation failure stops the process, and users need
-  to fix it to see what else is wrong. Thus, failures have to be fixed one by
-  one.
-* `cats.data.Validated` can validate multiple parts of a structure in
-  parallel, reporting all the errors at once. However, when building a complex
-  structure (for example, using `mapN`), the errors do not point to the exact
-  part that failed.
+* Using `Either` in Scala is a way to parse complex data structures and report
+  errors. However, the first failure stops the process, and users need to fix
+  it to see what else is wrong. Thus, failures have to be fixed one by one.
+* Cats' `Validated` can parse multiple parts of a structure in parallel,
+  reporting all the errors at once. However, when building a complex structure
+  (for example, using `mapN`), the errors do not point to the exact part that
+  failed.
 * This library offers a `ValidatedC` data type that keeps track of context -
-  the logical place in the structure that is currently being validated. This
+  the logical place in the structure that is currently being parsed. This
   context is added to errors so it's easy to pinpoint the problem.
+
+## Related libraries comparison
+
+| Library                                 | Data parsed  | Errors reported | Error context   |
+| :------                                 | :----------  | :-------------- | :------------   |
+| `Either` with a `for` comprehension     | ✅ Arbitrary | 😕 First        | ❌ None         |
+| `Validated` with `mapN`                 | ✅ Arbitrary | ✅ All          | ❌ None         |
+| [Circe]                                 | 😕 JSON      | 😕 First        | ✅ JSON path    |
+| [kantan.csv]                            | 😕 CSV       | 😕 First        | 😕 CSV row only |
+| [scala-parser-combinators], [FastParse] | 😕 Strings   | 😕 First        | ✅ Position     |
+| Refinery                                | ✅ Arbitrary | ✅ All          | ✅ User defined |
 
 ## Motivational example
 
@@ -103,4 +115,8 @@ println(
 Because `getConfig` now adds context to the validated value, the "Invalid
 integer" error now specifies that the bad value was `height`.
 
+[Circe]: https://circe.github.io/circe/
+[FastParse]: https://com-lihaoyi.github.io/fastparse/
+[kantan.csv]: https://nrinaudo.github.io/kantan.csv/
+[scala-parser-combinators]: https://github.com/scala/scala-parser-combinators
 [Validated]: https://typelevel.org/cats/datatypes/validated.html
