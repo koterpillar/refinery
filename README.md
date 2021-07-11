@@ -1,5 +1,7 @@
 # Refinery - contextual validation for Scala
 
+[![Maven Central](https://img.shields.io/maven-central/v/com.koterpillar/refinery_2.13)](https://mvnrepository.com/artifact/com.koterpillar/refinery)
+
 This library is a refinement of Cats' [Validated] for representing the result
 of validating some input, to add more context about where any failures
 occurred.
