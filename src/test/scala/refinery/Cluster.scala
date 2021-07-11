@@ -1,6 +1,6 @@
 package refinery
 
 case class Cluster(
-  leader: Connection,
-  followers: Vector[Connection],
+    leader: Connection,
+    followers: Vector[Connection],
 )
