@@ -55,6 +55,9 @@ jobs:
       - name: Build project
         run: sbt ++${{ matrix.scala }} test
 
+      - name: Check Formatting
+        run: sbt ++${{ matrix.scala }} scalafmtSbtCheck scalafmtCheckAll
+
       - name: Compress target directories
         run: tar cf targets.tar target project/target
 
