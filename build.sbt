@@ -34,6 +34,11 @@ ThisBuild / githubWorkflowTargetTags ++= Seq("v*")
 ThisBuild / githubWorkflowPublishTargetBranches +=
   RefPredicate.StartsWith(Ref.Tag("v"))
 
+ThisBuild / githubWorkflowBuild += WorkflowStep.Sbt(
+  List("scalafmtSbtCheck", "scalafmtCheckAll"),
+  name = Some("Check Formatting"),
+)
+
 ThisBuild / githubWorkflowPublish := Seq(
   WorkflowStep.Sbt(
     List("ci-release"),
