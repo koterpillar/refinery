@@ -1,11 +1,11 @@
-ThisBuild / scalaVersion := "2.13.5"
+ThisBuild / scalaVersion := "2.13.6"
 
 lazy val refinery = (project in file("."))
   .settings(
     libraryDependencies ++= Seq(
-      "org.typelevel" %% "cats-core" % "2.3.0",
-      "org.scalameta" %% "munit" % "0.7.19" % Test,
-      "com.lihaoyi" %% "ujson" % "1.2.2" % Test,
+      "org.typelevel" %% "cats-core" % "2.6.1",
+      "org.scalameta" %% "munit" % "0.7.27" % Test,
+      "com.lihaoyi" %% "ujson" % "1.4.0" % Test,
     ),
     testFrameworks += new TestFramework("munit.Framework"),
 
@@ -28,7 +28,7 @@ lazy val refinery = (project in file("."))
     sonatypeCredentialHost := "s01.oss.sonatype.org",
   )
 
-addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.11.3" cross CrossVersion.full)
+addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.13.0" cross CrossVersion.full)
 
 ThisBuild / githubWorkflowTargetTags ++= Seq("v*")
 ThisBuild / githubWorkflowPublishTargetBranches += 
