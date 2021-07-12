@@ -23,11 +23,11 @@ occurred.
 
 | Library                                 | Data parsed  | Errors reported | Error context   |
 | :------                                 | :----------  | :-------------- | :------------   |
-| `Either` with a `for` comprehension     | ✅ Arbitrary | 😕 First        | ❌ None         |
+| `Either` with a `for` comprehension     | ✅ Arbitrary | ⚠️  First        | ❌ None         |
 | `Validated` with `mapN`                 | ✅ Arbitrary | ✅ All          | ❌ None         |
-| [Circe]                                 | 😕 JSON      | 😕 First        | ✅ JSON path    |
-| [kantan.csv]                            | 😕 CSV       | 😕 First        | 😕 CSV row only |
-| [scala-parser-combinators], [FastParse] | 😕 Strings   | 😕 First        | ✅ Position     |
+| [Circe]                                 | ⚠️  JSON      | ⚠️  First        | ✅ JSON path    |
+| [kantan.csv]                            | ⚠️  CSV       | ⚠️  First        | ⚠️  CSV row only |
+| [scala-parser-combinators], [FastParse] | ⚠️  Strings   | ⚠️  First        | ✅ Position     |
 | Refinery                                | ✅ Arbitrary | ✅ All          | ✅ User defined |
 
 ## Motivational example
