@@ -31,6 +31,13 @@ package object refinery {
     }
   }
 
+  implicit class RefineryValidatedCTraverseOps[F[_]: Traverse, C, E, A](
+      value: ValidatedC[C, E, F[A]],
+  ) {
+    def andTraverse[B](fn: A => ValidatedC[C, E, B]): ValidatedC[C, E, F[B]] =
+      value.andThen(_.traverse(fn))
+  }
+
   implicit class ValueOps[A](value: A) {
     def validC[C, E]: ValidatedC[C, E, A] = value.pure[ValidatedC[C, E, *]]
   }
