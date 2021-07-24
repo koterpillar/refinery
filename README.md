@@ -1,6 +1,6 @@
 # Refinery - parser for complex data structures
 
-[![Maven Central](https://img.shields.io/maven-central/v/com.koterpillar/refinery_2.13)](https://mvnrepository.com/artifact/com.koterpillar/refinery)
+[![Maven Central](https://img.shields.io/maven-central/v/com.koterpillar/refinery_3)](https://mvnrepository.com/artifact/com.koterpillar/refinery)
 
 This library is a refinement of Cats' [Validated] for representing the result
 of parsing some input, to add more context about where any failures
